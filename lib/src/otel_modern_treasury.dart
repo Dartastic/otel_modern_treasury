@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_modern_treasury_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_modern_treasury';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class ModernTreasuryResult {
+  /// Creates a result.
   const ModernTreasuryResult({
     this.paymentOrderId,
     this.type,
@@ -46,8 +47,13 @@ class ModernTreasuryResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class ModernTreasuryCallResult<T> {
+  /// Creates a call result.
   const ModernTreasuryCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final ModernTreasuryResult? result;
 }
@@ -74,32 +80,32 @@ Future<T> tracedModernTreasury<T>({
   final span = _tracer().startSpan(
     'modern_treasury $resource.$operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.paymentOrderId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.payment_order.id',
           r.result!.paymentOrderId!,
         ));
       }
       if (r.result!.type != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.type',
           r.result!.type!,
         ));
       }
       if (r.result!.direction != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.direction',
           r.result!.direction!,
         ));
       }
       if (r.result!.status != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.status',
           r.result!.status!,
         ));
@@ -113,31 +119,31 @@ Future<T> tracedModernTreasury<T>({
         }
       }
       if (r.result!.amountMinor != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'modern_treasury.amount.minor',
           r.result!.amountMinor!,
         ));
       }
       if (r.result!.currency != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.currency',
           r.result!.currency!,
         ));
       }
       if (r.result!.originatingAccountId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.originating_account.id',
           r.result!.originatingAccountId!,
         ));
       }
       if (r.result!.receivingAccountId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'modern_treasury.receiving_account.id',
           r.result!.receivingAccountId!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -148,13 +154,13 @@ Future<T> tracedModernTreasury<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
